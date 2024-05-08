@@ -95,32 +95,39 @@
                             <input type="file" name="file" id="file-input" class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" style="display: none">
                             <!-- Bouton pour charger l'image -->
                             <button id="load-image-btn" class="btn btn-outline-gray-100  mb-3 mt-2 me-2 me-md-3 animate-up-2">Charger une image</button>
-                         <button class="btn btn-outline-gray-100  mb-3 mt-2 me-2 me-md-3 animate-up-2" id="filter-btn">Filtrer l'image</button>
+                         <button class="btn btn-outline-gray-100  mb-3 mt-2 me-2 me-md-3 animate-up-2" id="filter-btn">Appliquer un filtre</button>
                          <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="segment-btn">Segmenter l'image</button>
                          <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="contour-btn">Détection des contours</button>
-                            <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2">Afficher les celulle canceraux</button>
+                            <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="cancer-btn">Afficher les celulles canceraux</button>
                           <!--  <span
                                     class="fas fa-th-large me-2"></span> <span class="d-none d-md-inline">Explore
                                     components</span> <span class="d-md-none">Components</span></input> -->
                         </div>
                     
                         
-                            <div id="image-container" class="d-flex justify-content-center align-items-center mb-5">
+                            <div id="image-container" class="d-flex justify-content-center align-items-center mb-5 ">
                                 <div>
-                                    <p id="origin-label" style="display: none; border: 1px solid white; border-radius: 10px; max-width: 270px;">L'image Origénal</p>
+                                    <p id="origin-label" style="display: none; border: 1px solid white; border-radius: 10px; max-width: 270px;">l'image Origénal</p>
                                     <img id="selected-image" class="me-3" src="#" alt="Selected Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
                                 </div>
                                 <div class="text-center">
-                                    <p id="filtered-label"  class="me-3" style="display: none; border: 1px solid white; border-radius: 10px; max-width: 270px;"> L'image Filtre</p>
+                                    <p id="filtered-label"  class="me-3" style="display: none; border: 1px solid white; border-radius: 10px; max-width: 270px;"> l'image filtrée</p>
                                     <img id="filtered-image"  class="me-3" src="#" alt="Filtered Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white;min-width: 270px; min-height: 80px;">
                                 </div>
                                 <div class="text-center">
-                                    <p id="segmented-label" class="me-3" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;"> L'image Segmentation</p>
+                                    <p id="segmented-label" class="me-3" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;"> l'image Segmentée</p>
                                     <img id="segmented-image" class="me-3" src="#" alt="Segmented Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
                                 </div>
+                                </div>
+                                </div>
+                                <div id="image-container" class="d-flex justify-content-center align-items-center mb-5 ">
                                 <div class="text-center">
-                                    <p id="contours-label" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;">Détection des contours</p>
+                                    <p id="contours-label" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;">détection des contours</p>
                                     <img id="contours-image" class="me-3" src="#" alt="Contours Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
+                                </div>
+                                <div class="text-center">
+                                    <p id="cancer-label" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;">Image avec cellules cancéreuses</p>
+                                    <img id="cancer-image" class="me-3" src="#" alt="Contours Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
                                 </div>
                             
                         
@@ -141,6 +148,10 @@
     <!-- Ajoutez des scripts pour charger votre application de traitement d'images -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        var contenuElement = document.getElementById('file-input');
+        $('#clear-btn').click(function() {
+            contenuElement.innerHTML = ''; // Efface tout le contenu
+        })
         document.getElementById('load-image-btn').addEventListener('click', function() {
     // Cliquez sur le bouton invisible pour charger l'image
     document.getElementById('file-input').click();
@@ -215,6 +226,25 @@ $('#contour-btn').click(function() {
             $('#contours-image').attr('src', 'data:image/jpeg;base64,' + response.image);
             $('#contours-image').show();
             $('#contours-label').show();
+        }
+    });
+});
+$('#cancer-btn').click(function() {
+    var fileInput = document.getElementById('file-input');
+    var file = fileInput.files[0];
+    var formData = new FormData();
+    formData.append('file', file);
+
+    $.ajax({
+        type: 'POST',
+        url: '/cancer_cell',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+            $('#cancer-image').attr('src', 'data:image/jpeg;base64,' + response.image);
+            $('#cancer-image').show();
+            $('#cancer-label').show();
         }
     });
 });
