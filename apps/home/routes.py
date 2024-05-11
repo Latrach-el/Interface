@@ -11,9 +11,7 @@ from flask import  render_template, request, jsonify
 import cv2
 import numpy as np
 import base64
-from sklearn.svm import SVC
 import numpy as np
-from matplotlib import pyplot as plt
 from skimage import feature
 import joblib
 @blueprint.route('/index')
@@ -71,6 +69,19 @@ def filter_image():
     _, img_encoded = cv2.imencode('.jpg', filtered_img)
     filtered_img_base64 = base64.b64encode(img_encoded).decode('utf-8')
     return jsonify({'image': filtered_img_base64})
+@blueprint.route('/lab_image', methods=['POST'])
+def lab_image():
+    # Récupérer le fichier d'image à partir de la requête
+    file = request.files['file']
+    # Lire l'image
+    img = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.IMREAD_COLOR)
+    # Appliquer le filtre (exemple avec flou gaussien)
+    img = cv2.bilateralFilter(img, 9, 75, 75)
+    lab_img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    # Convertir l'image filtrée en base64 pour l'envoyer au frontend
+    _, img_encoded = cv2.imencode('.jpg', lab_img)
+    filtered_img_base64 = base64.b64encode(img_encoded).decode('utf-8')
+    return jsonify({'image': filtered_img_base64})
 # Route pour la segmentation de l'image
 @blueprint.route('/segment_image', methods=['POST'])
 def segment_image():
@@ -78,8 +89,42 @@ def segment_image():
     file = request.files['file']
     # Lire l'image
     cell_image = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.COLOR_BGR2RGB)
+    cell_image = cv2.bilateralFilter(cell_image, 9, 75, 75)
     # Appliquer la segmentation (exemple avec seuillage)
     image_lab = cv2.cvtColor(cell_image, cv2.COLOR_BGR2LAB)
+# Extraire la composante a* de l'image LAB
+    _, a, _ = cv2.split(image_lab)
+
+# Appliquer un seuillage d'Otsu
+    _, binary_mask = cv2.threshold(a, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+# Remplir les trous dans le masque
+    filled_mask = cv2.morphologyEx(binary_mask, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
+    filled_mask = cv2.morphologyEx(binary_mask, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+
+# Appliquer le masque sur l'image d'origine
+    result_image = cv2.bitwise_and(cell_image, cell_image, mask=filled_mask)
+
+# Convertir l'image en niveaux de gris
+    gray_cell_image = cv2.cvtColor(result_image, cv2.COLOR_BGR2GRAY)
+
+# Trouver les contours dans l'image en niveaux de gris
+    contours, _ = cv2.findContours(gray_cell_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Convertir l'image segmentée en base64 pour l'envoyer au frontend
+    contour_image = cell_image.copy()
+    cv2.drawContours(contour_image, contours, -1, (0, 255, 0), 2)
+    _, img_encoded = cv2.imencode('.png', filled_mask)
+    segmented_img_base64 = base64.b64encode(img_encoded).decode('utf-8')
+    return jsonify({'image': segmented_img_base64})
+@blueprint.route('/masque_image', methods=['POST'])
+def masque_image():
+    # Récupérer le fichier d'image à partir de la requête
+    file = request.files['file']
+    # Lire l'image
+    cell_image = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.COLOR_BGR2RGB)
+    # Appliquer la segmentation (exemple avec seuillage)
+    filtered_img = cv2.bilateralFilter(cell_image, 9, 75, 75)
+    image_lab = cv2.cvtColor(filtered_img, cv2.COLOR_BGR2LAB)
 # Extraire la composante a* de l'image LAB
     _, a, _ = cv2.split(image_lab)
 
@@ -112,8 +157,9 @@ def contour_imagre():
     file = request.files['file']
     # Lire l'image
     cell_image = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.IMREAD_COLOR)
+    filtered_img = cv2.bilateralFilter(cell_image, 9, 75, 75)
     # Appliquer la segmentation (exemple avec seuillage)
-    image_lab = cv2.cvtColor(cell_image, cv2.COLOR_BGR2LAB)
+    image_lab = cv2.cvtColor(filtered_img, cv2.COLOR_BGR2LAB)
 # Extraire la composante a* de l'image LAB
     _, a, _ = cv2.split(image_lab)
 
@@ -144,6 +190,7 @@ def contour_image():
     file = request.files['file']
     # Lire l'image
     cell_image = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.IMREAD_COLOR)
+    cell_image = cv2.bilateralFilter(cell_image, 9, 75, 75)
     def preprocess_image(image_path):
     # Charger l'image
         # blood_image = cv2.imread(image_path)

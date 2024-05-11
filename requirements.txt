@@ -13,5 +13,11 @@ flask-restx==0.5.1
 python-dotenv==0.19.2
 Flask-Minify==0.37
 opencv-python==4.9.0.80
+# Ajout des dépendances supplémentaires
+numpy==1.26.1
+opencv-python==4.9.0.80
+opencv-python-headless==4.9.0.80
+scikit-image==0.22.0
+joblib==1.3.2
 # flask_mysqldb
 # psycopg2-binary

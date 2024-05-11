@@ -91,14 +91,16 @@
                           LATRACH EL HABIB DETECTION DES CANCER
                         </h2>
                         <!-- Button Modal -->
-                        <div class="d-flex justify-content-center align-items-center mb-5">
+                        <div class="d-flex justify-content-between align-items-center mb-5">
                             <input type="file" name="file" id="file-input" class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" style="display: none">
                             <!-- Bouton pour charger l'image -->
                             <button id="load-image-btn" class="btn btn-outline-gray-100  mb-3 mt-2 me-2 me-md-3 animate-up-2">Charger une image</button>
                          <button class="btn btn-outline-gray-100  mb-3 mt-2 me-2 me-md-3 animate-up-2" id="filter-btn">Appliquer un filtre</button>
+                         <button class="btn btn-outline-gray-100  mb-3 mt-2 me-2 me-md-3 animate-up-2" id="lab-btn">Converter l'image en LAB</button>
                          <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="segment-btn">Segmenter l'image</button>
-                         <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="contour-btn">Détection des contours</button>
-                            <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="cancer-btn">Afficher les celulles canceraux</button>
+                         <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="masque-btn">Appliquer le   masque (et) </button>
+                         <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="contour-btn">Détecter les contours</button>
+                            <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="cancer-btn">Détecter les celulles canceraux</button>
                           <!--  <span
                                     class="fas fa-th-large me-2"></span> <span class="d-none d-md-inline">Explore
                                     components</span> <span class="d-md-none">Components</span></input> -->
@@ -115,12 +117,20 @@
                                     <img id="filtered-image"  class="me-3" src="#" alt="Filtered Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white;min-width: 270px; min-height: 80px;">
                                 </div>
                                 <div class="text-center">
-                                    <p id="segmented-label" class="me-3" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;"> l'image Segmentée</p>
-                                    <img id="segmented-image" class="me-3" src="#" alt="Segmented Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
+                                    <p id="lab-label" class="me-3" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;"> l'image LAB</p>
+                                    <img id="lab-image" class="me-3" src="#" alt="Segmented Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
                                 </div>
                                 </div>
                                 </div>
                                 <div id="image-container" class="d-flex justify-content-center align-items-center mb-5 ">
+                                    <div class="text-center">
+                                        <p id="segmented-label" class="me-3" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;"> l'image Segmentée</p>
+                                        <img id="segmented-image" class="me-3" src="#" alt="Segmented Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
+                                    </div>
+                                    <div class="text-center">
+                                        <p id="masque-label" class="me-3" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;"> l'image avec Masque</p>
+                                        <img id="masque-image" class="me-3" src="#" alt="masque Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
+                                    </div>
                                 <div class="text-center">
                                     <p id="contours-label" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;">détection des contours</p>
                                     <img id="contours-image" class="me-3" src="#" alt="Contours Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
@@ -185,6 +195,44 @@
                         $('#filtered-image').attr('src', 'data:image/jpeg;base64,' + response.image);
                         $('#filtered-image').show();
                         $('#filtered-label').show();
+                    }
+                });
+            });
+            $('#masque-btn').click(function() {
+                var fileInput = document.getElementById('file-input');
+                var file = fileInput.files[0];
+                var formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/masque_image',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        $('#masque-image').attr('src', 'data:image/jpeg;base64,' + response.image);
+                        $('#masque-image').show();
+                        $('#masque-label').show();
+                    }
+                });
+            });
+            $('#lab-btn').click(function() {
+                var fileInput = document.getElementById('file-input');
+                var file = fileInput.files[0];
+                var formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/lab_image',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        $('#lab-image').attr('src', 'data:image/jpeg;base64,' + response.image);
+                        $('#lab-image').show();
+                        $('#lab-label').show();
                     }
                 });
             });
