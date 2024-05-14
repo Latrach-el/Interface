@@ -94,13 +94,12 @@
                         <div class="d-flex justify-content-between align-items-center mb-5">
                             <input type="file" name="file" id="file-input" class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" style="display: none">
                             <!-- Bouton pour charger l'image -->
-                            <button id="load-image-btn" class="btn btn-outline-gray-100  mb-3 mt-2 me-2 me-md-3 animate-up-2">Charger une image</button>
-                         <button class="btn btn-outline-gray-100  mb-3 mt-2 me-2 me-md-3 animate-up-2" id="filter-btn">Appliquer un filtre</button>
-                         <button class="btn btn-outline-gray-100  mb-3 mt-2 me-2 me-md-3 animate-up-2" id="lab-btn">Converter l'image en LAB</button>
-                         <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="segment-btn">Segmenter l'image</button>
-                         <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="masque-btn">Appliquer le   masque (et) </button>
-                         <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="contour-btn">Détecter les contours</button>
-                            <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="cancer-btn">Détecter les celulles canceraux</button>
+                            <button id="load-image-btn" class="btn btn-outline-gray-100  mb-3 mt-2 me-2 me-md-3 animate-up-2">Charger l'Image</button>
+                         <button class="btn btn-outline-gray-100  mb-3 mt-2 me-2 me-md-3 animate-up-2" id="lab-btn">Convertir en LAB</button>
+                         <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="segment-btn">Segmenter l'Image</button>
+                         <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="masque-btn">Appliquer un Masque</button>
+                         <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="contour-btn">Détection des Contours </button>
+                            <button class="btn btn-outline-gray-100 mb-3 mt-2 me-2 me-md-3 animate-up-2" id="cancer-btn">Afficher les Cellules Cancéreuses</button>
                           <!--  <span
                                     class="fas fa-th-large me-2"></span> <span class="d-none d-md-inline">Explore
                                     components</span> <span class="d-md-none">Components</span></input> -->
@@ -113,20 +112,16 @@
                                     <img id="selected-image" class="me-3" src="#" alt="Selected Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
                                 </div>
                                 <div class="text-center">
-                                    <p id="filtered-label"  class="me-3" style="display: none; border: 1px solid white; border-radius: 10px; max-width: 270px;"> l'image filtrée</p>
-                                    <img id="filtered-image"  class="me-3" src="#" alt="Filtered Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white;min-width: 270px; min-height: 80px;">
-                                </div>
-                                <div class="text-center">
                                     <p id="lab-label" class="me-3" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;"> l'image LAB</p>
                                     <img id="lab-image" class="me-3" src="#" alt="Segmented Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
+                                </div>
+                                <div class="text-center">
+                                    <p id="segmented-label" class="me-3" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;"> l'image Segmentée</p>
+                                    <img id="segmented-image" class="me-3" src="#" alt="Segmented Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
                                 </div>
                                 </div>
                                 </div>
                                 <div id="image-container" class="d-flex justify-content-center align-items-center mb-5 ">
-                                    <div class="text-center">
-                                        <p id="segmented-label" class="me-3" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;"> l'image Segmentée</p>
-                                        <img id="segmented-image" class="me-3" src="#" alt="Segmented Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
-                                    </div>
                                     <div class="text-center">
                                         <p id="masque-label" class="me-3" style="display: none;border: 1px solid white; border-radius: 10px; max-width: 270px;"> l'image avec Masque</p>
                                         <img id="masque-image" class="me-3" src="#" alt="masque Image" style="display: none; max-width: 270px; max-height: 270px; border: 3px solid white; min-width: 270px; min-height: 80px;">
@@ -178,25 +173,6 @@
                     }
                     reader.readAsDataURL(file);
                 }
-            });
-            $('#filter-btn').click(function() {
-                var fileInput = document.getElementById('file-input');
-                var file = fileInput.files[0];
-                var formData = new FormData();
-                formData.append('file', file);
-
-                $.ajax({
-                    type: 'POST',
-                    url: '/filter_image',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    success: function(response) {
-                        $('#filtered-image').attr('src', 'data:image/jpeg;base64,' + response.image);
-                        $('#filtered-image').show();
-                        $('#filtered-label').show();
-                    }
-                });
             });
             $('#masque-btn').click(function() {
                 var fileInput = document.getElementById('file-input');
@@ -291,11 +267,28 @@ $('#cancer-btn').click(function() {
         processData: false,
         success: function(response) {
             $('#cancer-image').attr('src', 'data:image/jpeg;base64,' + response.image);
-            $('#cancer-image').show();
             $('#cancer-label').show();
+            $('#cancer-image').on('load', function() {
+                
+                // Vérifier si l'image est cancéreuse après avoir affiché l'image
+                if (response.cancer_percentage > 0 && !alertDisplayed) {
+                    alert('L\'image contient des cellules cancéreuses.');
+                    alertDisplayed = true; // Marquer que l'alerte a été affichée
+                } else if (response.cancer_percentage == 0 && !alertDisplayed) {
+                    alert('L\'image ne contient pas de cellules cancéreuses.');
+                    alertDisplayed = true; // Marquer que l'alerte a été affichée
+                }
+                // Afficher le label
+               
+            });
+            $('#cancer-image').show();
         }
     });
+    
+    var alertDisplayed = false; // Variable de contrôle pour vérifier si l'alerte a été affichée
+    
 });
+
         });
     </script>
     

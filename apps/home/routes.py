@@ -15,14 +15,12 @@ import numpy as np
 from skimage import feature
 import joblib
 @blueprint.route('/index')
-@login_required
 def index():
 
     return render_template('home/index.html', segment='index')
 
 
 @blueprint.route('/<template>')
-@login_required
 def route_template(template):
 
     try:
@@ -89,7 +87,6 @@ def segment_image():
     file = request.files['file']
     # Lire l'image
     cell_image = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.COLOR_BGR2RGB)
-    cell_image = cv2.bilateralFilter(cell_image, 9, 75, 75)
     # Appliquer la segmentation (exemple avec seuillage)
     image_lab = cv2.cvtColor(cell_image, cv2.COLOR_BGR2LAB)
 # Extraire la composante a* de l'image LAB
@@ -124,7 +121,7 @@ def masque_image():
     cell_image = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.COLOR_BGR2RGB)
     # Appliquer la segmentation (exemple avec seuillage)
     filtered_img = cv2.bilateralFilter(cell_image, 9, 75, 75)
-    image_lab = cv2.cvtColor(filtered_img, cv2.COLOR_BGR2LAB)
+    image_lab = cv2.cvtColor(cell_image, cv2.COLOR_BGR2LAB)
 # Extraire la composante a* de l'image LAB
     _, a, _ = cv2.split(image_lab)
 
@@ -190,7 +187,6 @@ def contour_image():
     file = request.files['file']
     # Lire l'image
     cell_image = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.IMREAD_COLOR)
-    cell_image = cv2.bilateralFilter(cell_image, 9, 75, 75)
     def preprocess_image(image_path):
     # Charger l'image
         # blood_image = cv2.imread(image_path)
@@ -283,7 +279,7 @@ def contour_image():
     # Calculate elongation (aspect ratio)
         elongation = float(max(w, h)) / min(w, h)
 
-        return area, perimeter, compactness, elongation, contrast, dissimilarity, homogeneity, energy, correlation, enclosing_circle_center_x, enclosing_circle_center_y, enclosing_circle_diameter,entropy,B_mean,A_mean,L_mean,rectangularity,solidity,eccentricity,circularity,convexity
+        return area, perimeter, compactness, elongation, dissimilarity, homogeneity, energy, correlation, enclosing_circle_center_x, enclosing_circle_center_y, enclosing_circle_diameter,entropy,B_mean,A_mean,L_mean,rectangularity,solidity,eccentricity,circularity,convexity
 
         # return  aspect_ratio
     def extract_cell_features(blood_image,component_a):
@@ -310,7 +306,7 @@ def contour_image():
 
     # Fonction pour tester si une image contient des cellules cancéreuses
     cancer_percentage,cancerous_cells,component_a,binary_mask, filled_mask ,result_image,blood_image,image_lab = test_image_for_cancer(cell_image, loaded_model)
-    if cancer_percentage > 1:
+    if cancer_percentage >0 :
     # Dessiner les cellules cancéreuses sur l'image
         for contour in cancerous_cells:
             # Utilisez les contours de chaque cellule pour dessiner un rectangle autour d'elle
@@ -318,4 +314,4 @@ def contour_image():
             cv2.rectangle(cell_image, (x, y), (x + w, y + h), (0, 0, 255), 2)
     _, img_encoded = cv2.imencode('.jpg', cell_image)
     contours_img_base64 = base64.b64encode(img_encoded).decode('utf-8')
-    return jsonify({'image': contours_img_base64})
+    return jsonify({'image': contours_img_base64,'cancer_percentage':cancer_percentage})

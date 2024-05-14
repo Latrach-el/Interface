@@ -19,8 +19,9 @@ from apps.authentication.util import verify_pass
 
 
 @blueprint.route('/')
-def route_default():
-    return redirect(url_for('authentication_blueprint.login'))
+def index():
+
+    return render_template('home/index.html', segment='index')
 
 
 # Login & Registration
